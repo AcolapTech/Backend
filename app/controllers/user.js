@@ -2,7 +2,7 @@ import  user from '../models/user.js'
 import role from "../models/rol.js";
 import emp from '../models/emp.js';
 import admin from '../models/admin.js';
-import bcrypt from "bcrypt";
+import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 import moment from "moment";
 import cookie from 'cookie-parser';
