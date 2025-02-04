@@ -4,9 +4,9 @@
   "main": "index.js",
   "type": "module",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "node index.js"
-  },
+  "preinstall": "rm -rf node_modules package-lock.json && npm cache clean --force",
+  "start": "node index.js"
+},
   "author": "",
   "license": "ISC",
   "description": "",
