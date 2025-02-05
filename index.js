@@ -16,9 +16,8 @@ const app = express();
 
 app.use(cookieParser());
 
-// Asegúrate de aplicar CORS antes de definir las rutas
 const corsOptions = {
-  origin: ['http://192.168.10.231:3000', 'http://localhost:3000'],  // Asegúrate de que coincida con el origen de tu frontend
+  origin: ['http://192.168.10.231:3000', 'http://localhost:3000', 'https://acolap.org.co'],  // Asegúrate de que coincida con el origen de tu frontend
   methods: ['GET', 'POST', 'PUT', 'DELETE'],
   allowedHeaders: ['Content-Type', 'Authorization'],
   credentials: true,  // Asegúrate de que las cookies también se envíen
