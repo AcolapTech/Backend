@@ -12,7 +12,7 @@ router.get("/listUsers", auth, admin, user.listAllUser);
 router.post("/registerAdminUser", auth, admin, user.registerAdminUser);
 router.get("/findUser/:nombre", auth, admin, user.findUser);
 router.get("/findUser", auth, user.findUserNew);
-router.get("/getRole/:email", auth, user.getUserRole);
+router.get("/getRole/:email", user.getUserRole);
 router.put("/updateUser", auth, admin, user.updateUser);
 router.put("/updateUserNew", auth, user.updateUserNew);
 router.put("/deleteUser", auth, admin, user.deleteUser);
