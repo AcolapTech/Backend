@@ -6,7 +6,7 @@ import upload from "../middlewares/Format_file.js";  // Middleware para subir ar
 
 const router = express.Router();
 
-router.post("/savenewsImg", mult, upload, auth, admin, news.savenewsImg);
+router.post("/savenewsImg", upload, auth, admin, news.savenewsImg);
 router.get("/listnotice", news.listnotice);
 router.put("/updatenotice", auth, admin, news.updatenotice);
 router.delete("/deletenotice", auth, admin, news.deletenotice);
