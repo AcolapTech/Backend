@@ -332,10 +332,9 @@ const registerUser = async (req, res) => {
             // Configurar la cookie
             res.cookie('token', token, {
               httpOnly: true, // No accesible desde JavaScript
-              // secure: process.env.NODE_ENV === 'production', // Solo en producción, debe ser 'true' para HTTPS
-              sameSite: 'strict', // Crucial para permitir cookies cross-origin
-              maxAge: null, // 1 hora en milisegundos
-              secure: true,
+              secure: process.env.NODE_ENV === 'production', // Solo en producción, debe ser 'true' para HTTPS
+              sameSite: 'None', // Crucial para permitir cookies cross-origin
+              maxAge: 3600000, // 1 hora en milisegundos
               path: '/', // Asegurarse de que la cookie esté disponible para toda la aplicación
           });          
 
@@ -367,10 +366,9 @@ const registerUser = async (req, res) => {
         // Configurar la cookie
         res.cookie('token', token, {
           httpOnly: true, // No accesible desde JavaScript
-          // secure: process.env.NODE_ENV === 'production', // Solo en producción, debe ser 'true' para HTTPS
-          sameSite: 'Lax', // Crucial para permitir cookies cross-origin
+          secure: process.env.NODE_ENV === 'production', // Solo en producción, debe ser 'true' para HTTPS
+          sameSite: 'None', // Crucial para permitir cookies cross-origin
           maxAge: 3600000, // 1 hora en milisegundos
-          secure: false,
           path: '/', // Asegurarse de que la cookie esté disponible para toda la aplicación
       });      
 
@@ -383,12 +381,13 @@ const registerUser = async (req, res) => {
 const logoutUser = async (req, res) => {
   try {
       // Eliminar la cookie configurando una fecha de expiración pasada
-      res.clearCookie('token', {
-          httpOnly: true,
-          sameSite: 'Lax',
-          secure: false, // Asegúrate de coincidir con el `secure` usado al establecer la cookie
-          path: '/', // Coincidir con el `path` usado al establecer la cookie
-      });
+      res.cookie('token', token, {
+        httpOnly: true, // No accesible desde JavaScript
+        secure: process.env.NODE_ENV === 'production', // Solo en producción, debe ser 'true' para HTTPS
+        sameSite: 'None', // Crucial para permitir cookies cross-origin
+        maxAge: 3600000, // 1 hora en milisegundos
+        path: '/', // Asegurarse de que la cookie esté disponible para toda la aplicación
+    });
 
       return res.status(200).send({ message: "Sesión cerrada correctamente" });
   } catch (error) {
