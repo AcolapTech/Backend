@@ -1,7 +1,6 @@
 import express from "express";
 import cors from "cors";
 import dotenv from "dotenv";
-import path from 'path';
 import cookieParser from 'cookie-parser';
 import db from './config/db.js';
 import user from './app/routes/user.js';
@@ -25,15 +24,14 @@ const corsOptions = {
 };
 
 app.use('/uploads', express.static('uploads'));
-app.use('/uploads_news', express.static(path.join(__dirname, 'uploads_news')));
-app.use('/uploads_pdfs', express.static(path.join(__dirname, 'uploads_pdfs')));
+app.use('/uploads_news', express.static('uploads_news'));
+app.use('/uploads_pdfs', express.static('uploads_pdfs')); 
 app.use(cors(corsOptions));
 
 // Configurar el parser de cookies
 
 // Aplicar middleware para procesar JSON
 app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
 
 // Define tus rutas
 app.use("/api/role", role);
