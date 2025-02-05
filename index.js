@@ -17,10 +17,10 @@ const app = express();
 app.use(cookieParser());
 
 const corsOptions = {
-  origin: ['http://192.168.10.231:3000', 'http://localhost:3000', 'https://acolap.org.co'],  // Asegúrate de que coincida con el origen de tu frontend
+  origin: ['https://acolap.org.co', 'http://localhost:3000'],  // Asegúrate de incluir tu dominio aquí
   methods: ['GET', 'POST', 'PUT', 'DELETE'],
-  allowedHeaders: ['Content-Type', 'Authorization'],
-  credentials: true,  // Asegúrate de que las cookies también se envíen
+  allowedHeaders: ['Content-Type', 'Authorization', 'Access-Control-Allow-Origin'],
+  credentials: true,  // Permite que las cookies sean enviadas
 };
 
 app.use('/uploads', express.static('uploads'));
