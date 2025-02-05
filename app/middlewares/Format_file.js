@@ -1,45 +1,29 @@
-const upload = async (req, res, next) => {
-  if (Object.keys(req.files).length === 0) {
-    return next();  // Si no se sube ningún archivo, continúa con la ejecución
+import multer from "multer";
+
+// Configurar almacenamiento en memoria (puedes cambiarlo a 'diskStorage' si prefieres guardar en disco)
+const storage = multer.memoryStorage();
+
+// Filtrar archivos por tipo
+const fileFilter = (req, file, cb) => {
+  const validImageTypes = ["image/png", "image/jpg", "image/jpeg", "image/gif"];
+  const validPdfType = "application/pdf";
+
+  if (validImageTypes.includes(file.mimetype) || file.mimetype === validPdfType) {
+    cb(null, true);
+  } else {
+    cb(new Error("Formato de archivo no válido. Solo se permiten imágenes (png, jpg, jpeg, gif) y PDFs."));
   }
-
-  const { image, pdf } = req.files;
-
-  // Validación para las imágenes
-  if (image) {
-    if (!image.name) {
-      return res.status(400).send({ message: "Falta nombre de la imagen" });
-    }
-
-    const imageType = image.type;
-    const validImageTypes = ["image/png", "image/jpg", "image/jpeg", "image/gif"];
-    
-    if (!validImageTypes.includes(imageType)) {
-      return res.status(400).send({
-        message: "Formato de imagen no válido: solo .png, .jpg, .jpeg, .gif",
-      });
-    }
-  }
-
-  // Validación para los PDFs
-  if (pdf) {
-    if (!pdf.name) {
-      return res.status(400).send({ message: "Falta nombre del archivo PDF" });
-    }
-
-    const pdfType = pdf.type;
-    const validPdfType = "application/pdf";
-    
-    if (pdfType !== validPdfType) {
-      return res.status(400).send({
-        message: "Formato de archivo no válido: solo .pdf",
-      });
-    }
-  }
-
-  // Si todo está bien, pasar al siguiente middleware o controlador
-  next();
 };
+
+// Configurar multer con almacenamiento y filtro de archivos
+const upload = multer({ 
+  storage,
+  limits: { fileSize: 5 * 1024 * 1024 }, // 5MB límite por archivo
+  fileFilter,
+}).fields([
+  { name: "image", maxCount: 1 }, // Un solo archivo de imagen
+  { name: "pdf", maxCount: 1 } // Un solo archivo PDF
+]);
 
 export default upload;
 

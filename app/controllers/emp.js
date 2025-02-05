@@ -36,44 +36,47 @@ import moment from "moment";
 
 const savempImg = async (req, res) => {
   try {
-    if (!req.body.nombre || !req.body.Pais || !req.body.Tipo_afiliado || !req.body.Razon_social || !req.body.Ciudad || !req.body.Num_sedes) {
+    const { nombre, Razon_social, Tipo_afiliado, Pais, Ciudad, Num_sedes, Tipo_parque, URL } = req.body;
+
+    if (!nombre || !Pais || !Tipo_afiliado || !Razon_social || !Ciudad || !Num_sedes) {
       return res.status(400).send({ message: "Datos incompletos" });
     }
 
     let imageUrl = "";
-    if (Object.keys(req.files).length === 0) {
-      imageUrl = "";
-    } else {
-      if (req.files.image) {
-        if (req.files.image.type != null) {
-          const url = req.protocol + "://" + req.get("host") + "/";
-          const serverImg =
-            "./uploads/" + moment().unix() + path.extname(req.files.image.path);
-          fs.createReadStream(req.files.image.path).pipe(
-            fs.createWriteStream(serverImg)
-          );
-          imageUrl =
-            url +
-            "uploads/" +
-            moment().unix() +
-            path.extname(req.files.image.path);
-        }
+
+    // Verificar si hay una imagen adjunta
+    if (req.files && req.files.image) {
+      const image = req.files.image[0]; // `multer` almacena los archivos en un array
+
+      // Construir la ruta del archivo
+      const uploadDir = "./uploads/";
+      if (!fs.existsSync(uploadDir)) {
+        fs.mkdirSync(uploadDir, { recursive: true });
       }
+
+      const filename = `${moment().unix()}${path.extname(image.originalname)}`;
+      const filePath = path.join(uploadDir, filename);
+
+      // Guardar el archivo en la carpeta `uploads`
+      fs.writeFileSync(filePath, image.buffer);
+
+      // Construir la URL pública de la imagen
+      const url = `${req.protocol}://${req.get("host")}/uploads/${filename}`;
+      imageUrl = url;
     }
 
-    // Crea el registro en la base de datos
+    // Crear el registro en la base de datos
     const empSchema = new emp({
-      nombre: req.body.nombre,
-      Razon_social: req.body.Razon_social,
-      Tipo_afiliado: req.body.Tipo_afiliado,
-      Pais: req.body.Pais,
-      Ciudad: req.body.Ciudad,
-      Num_sedes: req.body.Num_sedes,
-      Tipo_parque: req.body.Tipo_parque,
+      nombre,
+      Razon_social,
+      Tipo_afiliado,
+      Pais,
+      Ciudad,
+      Num_sedes,
+      Tipo_parque,
       LogoURL: imageUrl,
-      UrlParque: req.body.URL
+      UrlParque: URL,
     });
-
 
     const result = await empSchema.save();
     return res.status(200).send({ result });
