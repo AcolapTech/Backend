@@ -35,57 +35,63 @@ import moment from "moment";
 
 const savenewsImg = async (req, res) => {
   try {
-    if (!req.body.titulo || !req.body.descripcion) {
+    const { titulo, descripcion, link, tipo_noticia } = req.body;
+
+    if (!titulo || !descripcion) {
       return res.status(400).send({ message: "Datos incompletos" });
     }
 
     let imageUrl = "";
     let pdfUrl = "";
 
-    // Si se han subido archivos
-    if (req.files) {
-      // Manejo de la imagen
-      if (req.files.image) {
-        const image = req.files.image[0];
-        const imageType = image.mimetype;
+    // Verificar si hay una imagen adjunta
+    if (req.files && req.files.image) {
+      const image = req.files.image[0]; // `multer` almacena los archivos en un array
 
-        // Definir la ruta de la imagen
-        const imagePath = path.join(__dirname, "../uploads_news", moment().unix() + path.extname(image.originalname));
-
-        // Escribir la imagen en el disco
-        fs.writeFileSync(imagePath, image.buffer);
-
-        // Generar la URL de la imagen
-        imageUrl = req.protocol + "://" + req.get("host") + "/uploads_news/" + path.basename(imagePath);
+      // Construir la ruta del archivo
+      const uploadDir = "./uploads_news/";
+      if (!fs.existsSync(uploadDir)) {
+        fs.mkdirSync(uploadDir, { recursive: true });
       }
 
-      // Manejo del archivo PDF
-      if (req.files.pdf) {
-        const pdf = req.files.pdf[0];
-        const pdfType = pdf.mimetype;
+      const filename = `${moment().unix()}${path.extname(image.originalname)}`;
+      const filePath = path.join(uploadDir, filename);
 
-        // Verificar que el archivo PDF tiene un tipo MIME válido
-        if (pdfType !== "application/pdf") {
-          return res.status(400).send({ message: "El archivo PDF no tiene un formato válido." });
-        }
+      // Guardar el archivo en la carpeta `uploads_news`
+      fs.writeFileSync(filePath, image.buffer);
 
-        // Definir la ruta del PDF
-        const pdfPath = path.join(__dirname, "../uploads_pdfs", moment().unix() + path.extname(pdf.originalname));
+      // Construir la URL pública de la imagen
+      const url = `${req.protocol}://${req.get("host")}/uploads_news/${filename}`;
+      imageUrl = url;
+    }
 
-        // Escribir el PDF en el disco
-        fs.writeFileSync(pdfPath, pdf.buffer);
+    // Verificar si hay un archivo PDF adjunto
+    if (req.files && req.files.pdf) {
+      const pdf = req.files.pdf[0]; // `multer` almacena los archivos en un array
 
-        // Generar la URL del PDF
-        pdfUrl = req.protocol + "://" + req.get("host") + "/uploads_pdfs/" + path.basename(pdfPath);
+      // Construir la ruta del archivo PDF
+      const uploadDir = "./uploads_pdfs/";
+      if (!fs.existsSync(uploadDir)) {
+        fs.mkdirSync(uploadDir, { recursive: true });
       }
+
+      const filename = `${moment().unix()}${path.extname(pdf.originalname)}`;
+      const filePath = path.join(uploadDir, filename);
+
+      // Guardar el archivo en la carpeta `uploads_pdfs`
+      fs.writeFileSync(filePath, pdf.buffer);
+
+      // Construir la URL pública del PDF
+      const url = `${req.protocol}://${req.get("host")}/uploads_pdfs/${filename}`;
+      pdfUrl = url;
     }
 
     // Crear el objeto de noticia en la base de datos
     const newsSchema = new news({
-      titulo: req.body.titulo,
-      descripcion: req.body.descripcion,
-      link: req.body.link,
-      tipo_noticia: req.body.tipo_noticia,
+      titulo,
+      descripcion,
+      link,
+      tipo_noticia,
       imagen: imageUrl,  // URL de la imagen
       pdfLink: pdfUrl,   // URL del archivo PDF
     });

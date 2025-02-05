@@ -1,6 +1,8 @@
 import multer from "multer";
+import path from "path";
 
-const storage = multer.memoryStorage(); // Guardar en memoria, luego escribir en disco manualmente
+// Configuración para almacenar en memoria y luego guardar en disco
+const storage = multer.memoryStorage();
 
 const fileFilter = (req, file, cb) => {
   const validTypes = ["image/png", "image/jpg", "image/jpeg", "image/gif", "application/pdf"];
@@ -11,16 +13,18 @@ const fileFilter = (req, file, cb) => {
   }
 };
 
-const upload = multer({ 
+// Límite de tamaño de archivo (5MB)
+const upload = multer({
   storage,
   fileFilter,
-  limits: { fileSize: 5 * 1024 * 1024 }, // Límite de 5MB por archivo
+  limits: { fileSize: 5 * 1024 * 1024 },
 }).fields([
   { name: "image", maxCount: 1 }, // Imagen única
-  { name: "pdf", maxCount: 1 }, // PDF único
+  { name: "pdf", maxCount: 1 },   // PDF único
 ]);
 
 export default upload;
+
 
 
 
