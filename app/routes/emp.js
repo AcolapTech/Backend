@@ -6,7 +6,7 @@ import admin from "../middlewares/admin.js";
 
 const router = express.Router();
 
-router.post("/savempImg", mult, upload, auth, controllers.savempImg); 
+router.post("/savempImg", upload, auth, controllers.savempImg); 
 router.get("/listallemp", controllers.listallemp);
 router.put("/updateemp", auth, admin, controllers.updateemp);
 router.get("/findemp/:nombre", controllers.findemp);
