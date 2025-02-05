@@ -35,54 +35,49 @@ import moment from "moment";
 
 const savenewsImg = async (req, res) => {
   try {
-    if (!req.body.titulo || !req.body.descripcion) {
+    const { titulo, descripcion, link, tipo_noticia } = req.body;
+    if (!titulo || !descripcion) {
       return res.status(400).send({ message: "Datos incompletos" });
     }
 
     let imageUrl = "";
     let pdfUrl = "";
 
-    // Si se han subido archivos
-    if (Object.keys(req.files).length > 0) {
+    const timestamp = moment().unix();  // Se usa la misma marca de tiempo para evitar nombres diferentes
 
+    if (req.files) {
       // Manejo de la imagen
       if (req.files.image) {
-        if (req.files.image.type != null) {
-          const url = req.protocol + "://" + req.get("host") + "/";
-          const serverImg = "./uploads_news/" + moment().unix() + path.extname(req.files.image.path);
-          fs.createReadStream(req.files.image.path).pipe(fs.createWriteStream(serverImg));  // Guardar la imagen
-
-          imageUrl = url + "uploads_news/" + moment().unix() + path.extname(req.files.image.path);  // Generar la URL de la imagen
-        }
+        const extension = path.extname(req.files.image.name);
+        const imagePath = `./uploads_news/${timestamp}${extension}`;
+        await fs.writeFile(imagePath, await fs.readFile(req.files.image.path));
+        imageUrl = `${req.protocol}://${req.get("host")}/uploads_news/${timestamp}${extension}`;
       }
-      
+
       // Manejo del archivo PDF
       if (req.files.pdf) {
-        if (req.files.pdf.type) {
-          const pdfUrlPath = req.protocol + "://" + req.get("host") + "/";
-          const pdfPath = "./uploads_pdfs/" + moment().unix() + path.extname(req.files.pdf.path);
-          fs.createReadStream(req.files.pdf.path).pipe(fs.createWriteStream(pdfPath));  // Guardar el archivo PDF
-
-          pdfUrl = pdfUrlPath + "uploads_pdfs/" + moment().unix() + path.extname(req.files.pdf.path);  // Generar la URL del PDF
-        }
+        const extension = path.extname(req.files.pdf.name);
+        const pdfPath = `./uploads_pdfs/${timestamp}${extension}`;
+        await fs.writeFile(pdfPath, await fs.readFile(req.files.pdf.path));
+        pdfUrl = `${req.protocol}://${req.get("host")}/uploads_pdfs/${timestamp}${extension}`;
       }
     }
 
-    // Crear el objeto de noticia en la base de datos
+    // Crear y guardar la noticia en la base de datos
     const newsSchema = new news({
-      titulo: req.body.titulo,
-      descripcion: req.body.descripcion,
-      link: req.body.link,
-      tipo_noticia: req.body.tipo_noticia,
-      imagen: imageUrl,  // URL de la imagen
-      pdfLink: pdfUrl,   // URL del archivo PDF
+      titulo,
+      descripcion,
+      link,
+      tipo_noticia,
+      imagen: imageUrl,
+      pdfLink: pdfUrl,
     });
 
     const result = await newsSchema.save();
     return res.status(200).send({ result });
 
   } catch (error) {
-    console.error(error);
+    console.error("Error en savenewsImg:", error);
     return res.status(500).send({ message: "Error interno del servidor", error: error.message });
   }
 };

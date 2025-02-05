@@ -1,30 +1,36 @@
 import multer from "multer";
+import path from "path";
 
-// Configurar almacenamiento en memoria (puedes cambiarlo a 'diskStorage' si prefieres guardar en disco)
-const storage = multer.memoryStorage();
+// Configuración de multer para imágenes y PDFs
+const storage = multer.diskStorage({
+  destination: (req, file, cb) => {
+    if (file.mimetype.startsWith("image/")) {
+      cb(null, "./uploads_news");
+    } else if (file.mimetype === "application/pdf") {
+      cb(null, "./uploads_pdfs");
+    } else {
+      cb(new Error("Formato no permitido"), null);
+    }
+  },
+  filename: (req, file, cb) => {
+    const timestamp = Date.now();
+    const ext = path.extname(file.originalname);
+    cb(null, `${timestamp}${ext}`);
+  }
+});
 
-// Filtrar archivos por tipo
+// Filtros de archivos permitidos
 const fileFilter = (req, file, cb) => {
-  const validImageTypes = ["image/png", "image/jpg", "image/jpeg", "image/gif"];
-  const validPdfType = "application/pdf";
-
-  if (validImageTypes.includes(file.mimetype) || file.mimetype === validPdfType) {
+  if (file.mimetype.startsWith("image/") || file.mimetype === "application/pdf") {
     cb(null, true);
   } else {
-    cb(new Error("Formato de archivo no válido. Solo se permiten imágenes (png, jpg, jpeg, gif) y PDFs."));
+    cb(new Error("Formato de archivo no permitido"), false);
   }
 };
 
-// Configurar multer con almacenamiento y filtro de archivos
-const upload = multer({ 
-  storage,
-  limits: { fileSize: 5 * 1024 * 1024 }, // 5MB límite por archivo
-  fileFilter,
-}).fields([
-  { name: "image", maxCount: 1 }, // Un solo archivo de imagen
-  { name: "pdf", maxCount: 1 } // Un solo archivo PDF
-]);
+const upload = multer({ storage, fileFilter });
 
-export default upload;
+export default upload.any();  // Permite múltiples archivos
+
 
 
