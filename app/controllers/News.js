@@ -35,49 +35,61 @@ import moment from "moment";
 
 const savenewsImg = async (req, res) => {
   try {
-    const { titulo, descripcion, link, tipo_noticia } = req.body;
-    if (!titulo || !descripcion) {
+    if (!req.body.titulo || !req.body.descripcion) {
       return res.status(400).send({ message: "Datos incompletos" });
     }
 
     let imageUrl = "";
     let pdfUrl = "";
 
-    const timestamp = moment().unix();  // Se usa la misma marca de tiempo para evitar nombres diferentes
-
+    // Si se han subido archivos
     if (req.files) {
       // Manejo de la imagen
       if (req.files.image) {
-        const extension = path.extname(req.files.image.name);
-        const imagePath = `./uploads_news/${timestamp}${extension}`;
-        await fs.writeFile(imagePath, await fs.readFile(req.files.image.path));
-        imageUrl = `${req.protocol}://${req.get("host")}/uploads_news/${timestamp}${extension}`;
+        const image = req.files.image[0];
+        const imageType = image.mimetype;
+
+        // Definir la ruta de la imagen
+        const imagePath = path.join(__dirname, "../uploads_news", moment().unix() + path.extname(image.originalname));
+
+        // Escribir la imagen en el disco
+        fs.writeFileSync(imagePath, image.buffer);
+
+        // Generar la URL de la imagen
+        imageUrl = req.protocol + "://" + req.get("host") + "/uploads_news/" + path.basename(imagePath);
       }
 
       // Manejo del archivo PDF
       if (req.files.pdf) {
-        const extension = path.extname(req.files.pdf.name);
-        const pdfPath = `./uploads_pdfs/${timestamp}${extension}`;
-        await fs.writeFile(pdfPath, await fs.readFile(req.files.pdf.path));
-        pdfUrl = `${req.protocol}://${req.get("host")}/uploads_pdfs/${timestamp}${extension}`;
+        const pdf = req.files.pdf[0];
+        const pdfType = pdf.mimetype;
+
+        // Definir la ruta del PDF
+        const pdfPath = path.join(__dirname, "../uploads_pdfs", moment().unix() + path.extname(pdf.originalname));
+
+        // Escribir el PDF en el disco
+        fs.writeFileSync(pdfPath, pdf.buffer);
+
+        // Generar la URL del PDF
+        pdfUrl = req.protocol + "://" + req.get("host") + "/uploads_pdfs/" + path.basename(pdfPath);
       }
     }
 
-    // Crear y guardar la noticia en la base de datos
+    // Crear el objeto de noticia en la base de datos
     const newsSchema = new news({
-      titulo,
-      descripcion,
-      link,
-      tipo_noticia,
-      imagen: imageUrl,
-      pdfLink: pdfUrl,
+      titulo: req.body.titulo,
+      descripcion: req.body.descripcion,
+      link: req.body.link,
+      tipo_noticia: req.body.tipo_noticia,
+      imagen: imageUrl,  // URL de la imagen
+      pdfLink: pdfUrl,   // URL del archivo PDF
     });
 
     const result = await newsSchema.save();
     return res.status(200).send({ result });
 
   } catch (error) {
-    console.error("Error en savenewsImg:", error);
+    console.error(error);
     return res.status(500).send({ message: "Error interno del servidor", error: error.message });
   }
 };
