@@ -64,6 +64,11 @@ const savenewsImg = async (req, res) => {
         const pdf = req.files.pdf[0];
         const pdfType = pdf.mimetype;
 
+        // Verificar que el archivo PDF tiene un tipo MIME válido
+        if (pdfType !== "application/pdf") {
+          return res.status(400).send({ message: "El archivo PDF no tiene un formato válido." });
+        }
+
         // Definir la ruta del PDF
         const pdfPath = path.join(__dirname, "../uploads_pdfs", moment().unix() + path.extname(pdf.originalname));
 
@@ -89,7 +94,7 @@ const savenewsImg = async (req, res) => {
     return res.status(200).send({ result });
 
   } catch (error) {
-    console.error(error);
+    console.error("Error al guardar la noticia:", error);
     return res.status(500).send({ message: "Error interno del servidor", error: error.message });
   }
 };
