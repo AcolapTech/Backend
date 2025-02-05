@@ -32,6 +32,7 @@ app.use(cors(corsOptions));
 
 // Aplicar middleware para procesar JSON
 app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
 
 // Define tus rutas
 app.use("/api/role", role);
