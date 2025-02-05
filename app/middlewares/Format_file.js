@@ -1,48 +1,26 @@
 import multer from "multer";
-import path from "path";
-import fs from "fs";
 
-// Asegurar que las carpetas de destino existen
-const createFolderIfNotExists = (folder) => {
-  if (!fs.existsSync(folder)) {
-    fs.mkdirSync(folder, { recursive: true });
-  }
-};
+const storage = multer.memoryStorage(); // Guardar en memoria, luego escribir en disco manualmente
 
-// Definir almacenamiento para imágenes y PDFs
-const storage = multer.diskStorage({
-  destination: (req, file, cb) => {
-    let folder = "./uploads_news";
-    if (file.mimetype === "application/pdf") {
-      folder = "./uploads_pdfs";
-    }
-    
-    createFolderIfNotExists(folder); // Asegurar que la carpeta existe
-    cb(null, folder);
-  },
-  filename: (req, file, cb) => {
-    const timestamp = Date.now();
-    const ext = path.extname(file.originalname);
-    cb(null, `${timestamp}${ext}`);
-  }
-});
-
-// Filtrar archivos permitidos (solo imágenes y PDFs)
 const fileFilter = (req, file, cb) => {
-  if (file.mimetype.startsWith("image/") || file.mimetype === "application/pdf") {
+  const validTypes = ["image/png", "image/jpg", "image/jpeg", "image/gif", "application/pdf"];
+  if (validTypes.includes(file.mimetype)) {
     cb(null, true);
   } else {
-    cb(new Error("Formato de archivo no permitido"), false);
+    cb(new Error("Formato de archivo no válido. Solo se permiten imágenes (png, jpg, jpeg, gif) y PDFs."));
   }
 };
 
-// Middleware de multer
-const upload = multer({ storage, fileFilter });
-
-export default upload.fields([
-  { name: "image", maxCount: 1 },  // Asegura que solo se sube 1 imagen
-  { name: "pdf", maxCount: 1 }     // Asegura que solo se sube 1 PDF
+const upload = multer({ 
+  storage,
+  fileFilter,
+  limits: { fileSize: 5 * 1024 * 1024 }, // Límite de 5MB por archivo
+}).fields([
+  { name: "image", maxCount: 1 }, // Imagen única
+  { name: "pdf", maxCount: 1 }, // PDF único
 ]);
+
+export default upload;
 
 
 
